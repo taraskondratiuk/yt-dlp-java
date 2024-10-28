@@ -10,6 +10,7 @@ import com.jfposton.ytdlp.utils.StreamProcessExtractor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,8 +35,9 @@ public class YtDlp {
    * @param command Command string
    * @return Command string
    */
-  protected static String buildCommand(String command) {
-    return String.format("%s %s", executablePath, command);
+  protected static ArrayList<String> buildCommand(ArrayList<String> command) {
+    command.add(0, executablePath);
+    return command;
   }
 
   /**
@@ -58,9 +60,9 @@ public class YtDlp {
    * @throws YtDlpException
    */
   public static YtDlpResponse execute(YtDlpRequest request, DownloadProgressCallback callback)
-      throws YtDlpException {
+          throws YtDlpException {
 
-    String command = buildCommand(request.buildOptions());
+    ArrayList<String> command = buildCommand(request.buildOptions());
     String directory = request.getDirectory();
     Map<String, String> options = request.getOption();
 
@@ -71,9 +73,7 @@ public class YtDlp {
     StringBuilder errBuffer = new StringBuilder(); // stderr
     long startTime = System.nanoTime();
 
-    String[] split = command.split(" ");
-
-    ProcessBuilder processBuilder = new ProcessBuilder(split);
+    ProcessBuilder processBuilder = new ProcessBuilder(command);
 
     // Define directory if one is passed
     if (directory != null) processBuilder.directory(new File(directory));
@@ -88,7 +88,7 @@ public class YtDlp {
     InputStream errStream = process.getErrorStream();
 
     StreamProcessExtractor stdOutProcessor =
-        new StreamProcessExtractor(outBuffer, outStream, callback);
+            new StreamProcessExtractor(outBuffer, outStream, callback);
     StreamGobbler stdErrProcessor = new StreamGobbler(errBuffer, errStream);
 
     try {
@@ -110,7 +110,7 @@ public class YtDlp {
 
     int elapsedTime = (int) ((System.nanoTime() - startTime) / 1000000);
 
-    ytDlpResponse = new YtDlpResponse(command, options, directory, exitCode, elapsedTime, out, err);
+    ytDlpResponse = new YtDlpResponse(String.join(" ", command), options, directory, exitCode, elapsedTime, out, err);
 
     return ytDlpResponse;
   }

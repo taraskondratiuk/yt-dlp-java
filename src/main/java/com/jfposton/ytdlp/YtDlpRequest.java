@@ -75,12 +75,12 @@ public class YtDlpRequest {
    *
    * @return Command string
    */
-  protected String buildOptions() {
+  protected ArrayList<String> buildOptions() {
 
-    StringBuilder builder = new StringBuilder();
+    ArrayList<String> builder = new ArrayList<>();
 
     // Set Url
-    if (url != null) builder.append(url + " ");
+    if (url != null) builder.add(url);
 
     // Build options strings
     Iterator<Entry<String, String>> it = options.entrySet().iterator();
@@ -90,14 +90,14 @@ public class YtDlpRequest {
       String name = option.getKey();
       String value = option.getValue();
 
-      if (value == null) value = "";
-
-      String optionFormatted = String.format("--%s %s", name, value).trim();
-      builder.append(optionFormatted + " ");
+      builder.add("--" + name);
+      if (value != null) {
+        builder.add(value);
+      }
 
       it.remove();
     }
 
-    return builder.toString().trim();
+    return builder;
   }
 }
